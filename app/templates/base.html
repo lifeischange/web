@@ -28,14 +28,7 @@
 		</div> 
 		<div class="navbar-collapse collapse">
 			<ul class="nav navbar-nav">
-				<li><a href="/">秦</a>  </li>
-				<ul class="nav navbar-nav navbar-right">
-					{%if current_user.is_authenticated%}
-						<li><a href="{{url_for("auth.logout")}}">退出</a></li>
-					{%else%}
-						<li><a href="{{url_for("auth.login")}}">登</a></li>
-					{%endif%}
-				</ul>  
+				<li><a href="/">秦</a>  </li>  
 			</ul>  
 		</div> 
 	</div> 
@@ -53,7 +46,7 @@
 	
 	{% block page_content%}
 		<div class="page-header">
-			<h1>Hello,{%if current_user.is_authenticated%}{{current_user.username}}{%else%}stranger{%endif%}!</h1>  
+			<h1>Hello,{%if name%}{{name}}{%else%}stranger{%endif%}!</h1>  
 		</div>
 		{%if known%}
 		<p>nice to meet you!</p>  
