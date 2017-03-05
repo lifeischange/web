@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+
+{%extends "index.html"%}
+{%import "bootstrap/wtf.html" as wtf%}
+
+{%block title%}
+个人资料
+{%endblock%}
+
+
+{%block page_content%}
+<div class="page_header">
+	<h1>资料编辑</h1>
+
+</div> 
+<div>
+	{{wtf.quick_form(form)}}
+</div> 
+
+{%endblock%}

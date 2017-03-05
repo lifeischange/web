@@ -1,0 +1,23 @@
+# <!DOCTYPE html>  
+
+{%extends "index.html"%}
+
+{%block title%}
+	确认账户	
+{%endblock%}
+
+{%block page_content%}
+<div class="page-header">
+	<h1> 你好{{current_user.username}}!
+	</h1>
+	<h3>你还没有激活你的账户。</h3>
+	<p>
+		进入网站前，你需要激活的你账号。
+		检查下你的邮箱，应该有封确认邮件发给你了。
+	</p>  
+	<p>
+		需要再次发送激活邮件？
+		<a href="{{url_for("auth.resend_confirmation")}}"> 点这里</a> 
+	</p> 
+</div> 
+{%endblock%}

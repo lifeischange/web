@@ -1,0 +1,5 @@
+你好，{{user.username}},
+确认你的邮箱地址请<a href="{{url_for("auth.change_email",token=token,_external=True)}}">点击这里</a>
+当然，你也可以复制以下链接到浏览器中
+{{url_for("auth.change_email",token=token,_external=True)}}
+注意：不必回复此邮件 
