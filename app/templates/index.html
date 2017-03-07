@@ -1,107 +1,43 @@
 <!DOCTYPE html>
 
-{% extends "bootstrap/base.html"%}
+{% extends "base.html"%}
 {% import "bootstrap/wtf.html" as wtf%}
+{%import "_macros.html" as macros%}
 
-{% block head%}
-{{super()}}
-<link rel="shortcut icon" href="{{url_for("static",filename='favicon.ico')}}" type="image/x-icon">
-<link rel="icon" href="{{url_for("static",filename='favicon.ico')}}" type="image/x-icon">
-{%endblock%}
+{%block title%}博客{%endblock%}
 
-{% block title %}
-	东胜神州
-{%endblock%}
-
-{%block navbar%}
-<div class="navbar navbar-inverse" role="navigation">
-	<div class="container">
-		<div class="navbar-header">
-			<button type="button" class="navbar-toggle"
-			data-toggle="collapse" data-target=".navbar-collapse">
-				<span class="sr-only">Toggle navigation </span>
-				<span class="icon-bar"></span>  
-				<span class="icon-bar"></span>  
-				<span class="icon-bar"></span>  
-			</button>
-			<a class="navbar-brand" href="/">不周山</a>
-		</div> 
-		<div class="navbar-collapse collapse">
-			<ul class="nav navbar-nav">
-				<li><a href="/">秦</a></li>
-				<ul class="nav navbar-nav navbar-right">
-					{%if current_user.is_authenticated%}
-						<li>
-							<a href="{{url_for("main.user",username=current_user.username)}}">
-							我的资料
-							</a> 
-						</li> 
-						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown">账户<b class="caret"></b></a>
-							<ul class="dropdown-menu">
-								<li><a href="{{url_for("auth.change_password")}}">更改密码</a></li>
-								<li><a href="{{url_for("auth.change_email_request")}}">更改邮箱</a></li>
-								<li><a href="{{url_for("auth.logout")}}">退出</a></li>
-							</ul>  
-						</li>
-					{%else%}
-						<li><a href="{{url_for("auth.login")}}">登</a></li>
-					{%endif%}
-				</ul>  
-			</ul>  
-		</div> 
-	</div> 
-</div> 
-{%endblock%}
-
-{%block content%}
-<div class="container">
-	{%for message in get_flashed_messages()%}
-	<div class="alert alert-warning">
-		<button type="button" class="close" data-dismiss="alert">&times;</button>
-		{{message}}
-	</div> 
-	{%endfor%}
-	
-	{% block page_content%}
+{% block page_content%}
 		<div class="page-header">
 			<h1>Hello,{%if current_user.is_authenticated%}{{current_user.username}}{%else%}stranger{%endif%}!</h1>  
 		</div>
-		{%if known%}
-		<p>nice to meet you!</p>  
-		{%else%}
-		<p>how old are you!</p>  
-		{%endif%}
 	<div> 
 		{%if current_user.can(Permission.WRITE_ARTICLES)%}
 			{{wtf.quick_form(form)}}
 		{%endif%}
-	</div> 
-	<ul class="posts">
-		{%for post in posts%}
-			<li class="post">
-				<div class="post-thumbnail">
-					<a href="{{ulr_for('.user',username=post.author.username)}}">
-					<img class="img-rounded profile-thumbnail"
-						src="{{post.author.gravatar(size=40)}}">
-					</a>  
-				</div> 
-				<div class="post-date">{{moment(post.timestamp).fromNow()}}</div>
-				<div class="post-author">
-					<a href="{{url_for('.user',username=post.author.username)}}">
-						{{post.author.username}}
-					</a>  
-				</div> 
-				<div class="post-body">{{post.body}}</div>   
+	</div>
+	<div class="post-tabs">
+		<ul class="nav nav-tabs">
+			<li {%if not show_followed%} class="activate" {%endif%}>
+				<a href="{{url_for('.show_all')}}">所有文章
+				</a> 
 			</li> 
-		{%endfor%}
-	</ul> 
-</div>
+			{%if current_user.is_authenticated%}
+				<li{%if show_followed%}class="active"{%endif%}>
+					<a href="{{url_for('.show_followed')}}">关注者文章</a>  
+				</li> 
+			{%endif%}
+		</ul> 
+	{%include '_post.html'%}	
+	</div>
+	{%if pagination%}
+	<div class="pagination">
+		{{macros.pagination_widget(pagination,'.index')}}
+	</div> 
+	{%endif%}
 	<div> 
 	<p>The local time and date is {{moment(current_time).format('LLL')}} </p>  
 	<p>That was {{moment(current_time).fromNow(refresh=True)}}</p>  
 	</div> 
-{%endblock%}
 {%endblock%}
 {%block scripts%}
 {{super()}}

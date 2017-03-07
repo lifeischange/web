@@ -1,9 +1,9 @@
 # !/usr/bin/python
 # coding:utf-8
 
-from . import db#载入数据库
+from . import db,login_manager#载入数据库
 from werkzeug.security import generate_password_hash,check_password_hash #通过werkzeug中的security模块生产密码的哈\希值，这个值保存在数据库中。下次登录时，先使用密码生成散列值，在于数据库中的对比。数据库被模型函数隔离，不与用户发\生直接关系。
-from flask_login import UserMixin,AnonymousUserMixin,login_manager#给数据模型增加用户登录模块
+from flask_login import UserMixin,AnonymousUserMixin#给数据模型增加用户登录模块
 
 #邮件确认id的序列化
 from itsdangerous import TimedJSONWebSignatureSerializer as serializer
@@ -48,6 +48,14 @@ class Role(db.Model):
 			db.session.add(role)
 		db.session.commit()
 
+class Follow(db.Model):
+	__tablename__="follows"
+	follower_id=db.Column(db.Integer,db.ForeignKey("users.id"),
+						 primary_key=True)
+	followed_id=db.Column(db.Integer,db.ForeignKey("users.id"),
+						 primary_key=True)
+	timestamp=db.Column(db.DateTime,default=datetime.utcnow)
+
 class User(UserMixin,db.Model):
 	__tablename__="users"
 	id=db.Column(db.Integer,primary_key=True)
@@ -73,6 +81,8 @@ class User(UserMixin,db.Model):
 							  backref=db.backref("followed",lazy="joined"),
 							  lazy="dynamic",
 							  cascade="all,delete-orphan")
+	
+	comments=db.relationship("Comment",backref="author",lazy="dynamic")
 
 	def __init__(self,**kwargs):
 		super(User,self).__init__(**kwargs)
@@ -83,13 +93,19 @@ class User(UserMixin,db.Model):
 				self.role=Role.query.filter_by(default=True).first()
 		if self.email is not None and self.avatar_hash is None:
 			self.avatar_hash=hashlib.md5(self.email.encode("utf-8")).hexdigest()
-
+		self.followed.append(Follow(followed=self))
+		
 	def __repr__(self):
 		return "<User %r>"%self.username
 
 	@property
 	def password(self):
 		raise AttributeError(u"密码不可见")
+	
+	@property
+	def followed_posts(self):
+		return Post.query.join(Follow,Follow.followed_id==Post.author_id)\
+				.filter(Follow.follower_id==self.id)
 
 	@password.setter
 	def password(self,password):
@@ -186,6 +202,7 @@ class User(UserMixin,db.Model):
 
 	def is_followed_by(self,user):
 		return self.followers.filter_by(follower_id=user.id).first() is not None
+
 	@staticmethod
 	def generate_fake(count=100):
 		from sqlalchemy.exc import IntegrityError
@@ -208,6 +225,13 @@ class User(UserMixin,db.Model):
 			except IntegrityError:
 				db.session.rollback()
 
+	@staticmethod
+	def add_self_follows():
+		for user in User.query.all():
+			if not user.is_following(user):
+				user.follow(user)
+				db.session.add(user)
+				db.session.commit()
 
 class Permission:
 	FOLLOW=0x01
@@ -241,6 +265,7 @@ class Post(db.Model):
 	timestamp=db.Column(db.DateTime,index=True,default=datetime.utcnow)
 	author_id=db.Column(db.Integer,db.ForeignKey("users.id"))
 	body_html=db.Column(db.Text)
+	comments=db.relationship("Comment",backref="post",lazy="dynamic")
 
 	@staticmethod
 	def generate_fake(count=100):
@@ -264,12 +289,21 @@ class Post(db.Model):
 						 markdown(value,output_format="html"),tags=allowed_tags,strip=True))
 db.event.listen(Post.body,"set",Post.on_changed_body)
 
-class Follow(db.Model):
-	__tablename__="follows"
-	follower_id=db.Column(db.Integer,db.ForeignKey("users.id"),
-						 primary_key=True)
-	followed_id=db.Column(db.Integer,db.ForeignKey("users.id"),
-						 primary_key=True)
-	timestamp=db.Column(db.DateTime,default=datetime.utcnow)
+class Comment(db.Model):
+	__tablename__="comments"
+	id=db.Column(db.Integer,primary_key=True)
+	body=db.Column(db.Text)
+	timestamp=db.Column(db.DateTime,index=True,default=datetime.utcnow)
+	author_id=db.Column(db.Integer,db.ForeignKey("users.id"))
+	body_html=db.Column(db.Text)
+	disabled=db.Column(db.Boolean)
+	post_id=db.Column(db.Integer,db.ForeignKey("posts.id"))
+	
+	@staticmethod
+	def on_changed_body(target,value,oldvalue,initiator):
+		allowed_tags=["a","abbr","acronym","b","code","em","i","strong"] 
+		target.body_html=bleach.linkify(bleach.clean(
+						 markdown(value,output_format="html"),tags=allowed_tags,strip=True))
+db.event.listen(Comment.body,"set",Comment.on_changed_body)
 
 

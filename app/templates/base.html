@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 
 {% extends "bootstrap/base.html"%}
-{% import "bootstrap/wtf.html" as wtf%}
 
 {% block head%}
 {{super()}}
 <link rel="shortcut icon" href="{{url_for("static",filename='favicon.ico')}}" type="image/x-icon">
 <link rel="icon" href="{{url_for("static",filename='favicon.ico')}}" type="image/x-icon">
+<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='styles.css')}}"> 
 {%endblock%}
 
 {% block title %}
-	红衣大将军
+	新世界
 {%endblock%}
 
 {%block navbar%}
@@ -24,12 +24,34 @@
 				<span class="icon-bar"></span>  
 				<span class="icon-bar"></span>  
 			</button>
-			<a class="navbar-brand" href="/">不周山</a>
+			<a class="navbar-brand" href="{{url_for('main.index')}}">廊桥</a>
 		</div> 
 		<div class="navbar-collapse collapse">
 			<ul class="nav navbar-nav">
-				<li><a href="/">秦</a>  </li>  
-			</ul>  
+				<li><a href="{{url_for('main.index')}}">天府之国</a></li>
+				{%if current_user.is_authenticated%}
+					<li><a href="{{url_for('main.user',username=current_user.username)}}">我的资料</a></li>  
+				{%endif%}
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+			{%if current_user.can(Permission.MODERATE_COMMENT)%}
+				<li><a href="{{url_for('main.moderate')}}">修改评论</a></li>  
+			{%endif%}
+			{%if current_user.is_authenticated%}
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+					<img src="{{current_user.gravatar(size=20)}}">账户<b class="caret"></b>   
+					</a> 
+					<ul class="dropdown-menu">
+						<li><a href="{{url_for('auth.change_password')}}">修改密码</a></li>
+						<li><a href="{{url_for('auth.change_email_request')}}">修改邮箱</a></li>
+						<li><a href="{{url_for('auth.logout')}}">退出 </a></li>  
+					</ul> 
+				</li> 
+			{%else%}
+				<li><a href="{{url_for('auth.login')}}">登录</a></li>  
+			{%endif%}
+			</ul> 
 		</div> 
 	</div> 
 </div> 
@@ -44,20 +66,8 @@
 	</div> 
 	{%endfor%}
 	
-	{% block page_content%}
-		<div class="page-header">
-			<h1>Hello,{%if name%}{{name}}{%else%}stranger{%endif%}!</h1>  
-		</div>
-		{%if known%}
-		<p>nice to meet you!</p>  
-		{%else%}
-		<p>how old are you!</p>  
-		{%endif%}
-	{{wtf.quick_form(form)}}
-	{%endblock%}
+	{% block page_content%}{%endblock%}
 </div>
-	<p>The local time and date is {{moment(current_time).format('LLL')}} </p>  
-	<p>That was {{moment(current_time).fromNow(refresh=True)}}</p>  
 {%endblock%}
 
 {%block scripts%}

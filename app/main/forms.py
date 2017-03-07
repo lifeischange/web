@@ -1,7 +1,7 @@
 # !/usr/bin/python
 # coding:utf-8
 
-from flask_wtf import Form
+from flask_wtf import FlaskForm as Form
 from wtforms import StringField,SubmitField,TextAreaField,SelectField,BooleanField
 from wtforms.validators import Required,Length,Regexp,Email
 from flask_pagedown.fields import PageDownField
@@ -43,4 +43,8 @@ class EditProfileAdminField(Form):
 
 class PostForm(Form):
 	body=PageDownField(u"你的想法",validators=[Required()])
+	submit=SubmitField(u"上传")
+
+class CommentForm(Form):
+	body=StringField(u"你的态度",validators=[Required()])
 	submit=SubmitField(u"上传")

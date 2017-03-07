@@ -1,11 +1,11 @@
-{%macro pagination_wiget(pagination,endpoint)%}
+{%macro pagination_widget(pagination,endpoint,fragment="")%}
 <ul class="pagination">
 	<li {%if not pagination.has_prev%} class="disabled" {%endif%}>
-		<a href="{%if pagination.has_prev%}" 
+		<a href="{%if pagination.has_prev%} 
 					{{url_for(endpoint,page=pagination.page-1,**kwargs)}}
 				 {%else%}
 				 	#
-				 {%endif%}>
+				 {%endif%}">
 				 &laquo;
 		</a>
 	</li>
@@ -15,7 +15,7 @@
 				<li class="active">
 					<a href="{{url_for(endpoint,page=p,**kwargs)}}">{{p}}</a>  
 				</li> 
-			{%eles%}
+			{%else%}
 				<li>
 					<a href="{{url_for(endpoint,page=p,**kwargs)}}">{{p}}</a>  
 				</li> 
@@ -31,4 +31,4 @@
 		&raquo;</a> 
 	</li> 
 </ul> 
-{%end macro%}
+{%endmacro%}

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-{%extends "index.html"%}
+{%extends "base.html"%}
 {%import "bootstrap/wtf.html" as wtf%}
 
 {%block title%}
@@ -13,7 +13,7 @@
 	<h1>资料编辑</h1>
 
 </div> 
-<div>
+<div class="col-md-4">
 	{{wtf.quick_form(form)}}
 </div> 
 
