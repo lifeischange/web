@@ -1,0 +1,2 @@
+SSL_DISABLE=1
+FLASK_CONFIG=heroku

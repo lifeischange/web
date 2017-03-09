@@ -2,7 +2,7 @@
 # coding:utf-8
 
 import unittest
-from app.models import User
+from app.models import User,Role,AnonymousUser,Permission
 
 class Usermodeltestcase(unittest.TestCase):
 	def test_password_setter(self):#测试说明创建的用户的密码散列值是存在的
@@ -24,3 +24,12 @@ class Usermodeltestcase(unittest.TestCase):
 		u2=User(password="bullet")
 		self.assertTrue(u.password_hash!=u2.password_hash)
 	
+	def test_roles_and_permissions(self):
+		Role.insert_roles()
+		u=User(email="123@321.com",password="cat")
+		self.assertTrue(u.can(Permission.WRITE_ARTICLES))
+		self.assertFalse(u.can(Permission.MODERATE_COMMENTS))
+
+	def test_anonymous_user(self):
+		u=AnonymousUser()
+		self.assertFalse(u.can(Permission.FOLLOW))
